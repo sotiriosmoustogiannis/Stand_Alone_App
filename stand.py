@@ -320,7 +320,7 @@ label6.grid(row=9, column=0)
 
 comboExample6.grid(row=9, column=1)
 
-label7 = tk.Label(frame, text="Property 8: ")
+label7 = tk.Label(frame, text="Property '8: ")
 label7.grid(row=10, column=0)
 
 comboExample7.grid(row=10, column=1)

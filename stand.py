@@ -8,6 +8,7 @@ import pandas as pd
 import re
 import time
 from datasketch import MinHash, MinHashLSHForest
+import pickle
 
 # variables that define the size of the window form
 HEIGHT = 900
@@ -42,6 +43,11 @@ def openfile():
     db = pd.read_csv(filename)
 
     return db
+
+def savefile(forest):
+    pickle_out = open("dict.pickle", "wb")
+    pickle.dump(forest, pickle_out)
+    pickle_out.close()
 
 # TODO save the file(forest) with the name of the store name
 def get_forest(db,perms,*args):
@@ -80,20 +86,25 @@ def get_forest(db,perms,*args):
     forest.index()
 
     print('It took %s seconds to build forest.' %(time.time()-start_time))
-
+    print('--------------------------')
+    print(type(forest))
+    print(forest)
     return forest
 
-def predict(text, database, perms, num_results, forest):
+def predict(text, database, perms, num_results):
     start_time = time.time()
 
     print(start_time)
+
+    pickle_in = open("dict.pickle", "rb")
+    example_dict = pickle.load(pickle_in)
 
     tokens = preprocess(text)
     m = MinHash(num_perm=perms)
     for s in tokens:
         m.update(s.encode('utf8'))
 
-    idx_array = np.array(forest.query(m, num_results))
+    idx_array = np.array(example_dict.query(m, num_results))
     if len(idx_array) == 0:
         return None # if your query is empty, return none
 
@@ -320,7 +331,7 @@ label6.grid(row=9, column=0)
 
 comboExample6.grid(row=9, column=1)
 
-label7 = tk.Label(frame, text="Property '8: ")
+label7 = tk.Label(frame, text="Property 8: ")
 label7.grid(row=10, column=0)
 
 comboExample7.grid(row=10, column=1)
@@ -344,9 +355,10 @@ comboExample10.grid(row=13, column=1)
 button1 = tk.Button(frame, text = "forest", bg ='gray', fg='red',command=lambda: get_forest(db, permutations,comboExample.get(),comboExample1.get(),comboExample2.get(),comboExample3.get(),comboExample4.get(),comboExample5.get(),comboExample6.get(),comboExample7.get(),comboExample8.get(),comboExample9.get(),comboExample10.get()))
 button1.grid(row=14, column=0)
 
-button2 = tk.Button(frame, text = "result", bg ='gray', fg='red',command=lambda: predict(operations, db, permutations, num_recommendations, forest))
+button2 = tk.Button(frame, text = "result", bg ='gray', fg='red',command=lambda: predict(operations, db, permutations, num_recommendations))
 button2.grid(row=15, column=0)
 
-
+button3 = tk.Button(frame, text = "save", bg ='gray', fg='red',command=lambda: savefile(forest))
+button3.grid(row=16, column=0)
 
 root.mainloop()
